@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package sgea.auth;
+
+enum UserRole {
+  USER_ROLE_UNSPECIFIED = 0;
+  ADMIN = 1;
+  ORGANIZER = 2;
+  PARTICIPANT = 3;
+}
+
+service AuthService {
+  // Valida um token JWT e retorna os dados e papel RBAC do usuário
+  rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+
+  // Busca informações básicas de um usuário pelo ID (usado por Notificações/Inscrições)
+  rpc GetUserById (GetUserByIdRequest) returns (UserResponse);
+}
+
+message ValidateTokenRequest {
+  string token = 1;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+  string user_id = 2;
+  string email = 3;
+  string name = 4;
+  UserRole role = 5;
+}
+
+message GetUserByIdRequest {
+  string user_id = 1;
+}
+
+message UserResponse {
+  string user_id = 1;
+  string name = 2;
+  string email = 3;
+  UserRole role = 4;
+  bool is_active = 5;
+}

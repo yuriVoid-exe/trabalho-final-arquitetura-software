@@ -8,3 +8,8 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Bancos locais SQLite
+*.db
+*.sqlite
+*.sqlite3

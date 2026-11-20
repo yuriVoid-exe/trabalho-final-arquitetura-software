@@ -1,7 +1,18 @@
 [project]
 name = "trabalho-final-arquitetura-software"
 version = "0.1.0"
-description = "Add your description here"
+description = "SGEA (Sistema de Gerenciamento de Eventos Acadêmicos) — Sistema desenvolvido para o trabalho final de Arquitetura de Software, focado na gestão completa de semanas acadêmicas, palestras e minicursos universitários, com ênfase em modularidade, escalabilidade e manutenibilidade."
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "aiosqlite>=0.22.1",
+    "fastapi>=0.165.0",
+    "grpcio>=1.85.3",
+    "grpcio-tools>=1.85.3",
+    "pwdlib[argon2]>=0.4.2",
+    "pydantic[email]>=2.14.4",
+    "pydantic-settings>=2.16.3",
+    "pyjwt>=2.15.1",
+    "sqlalchemy[asyncio]>=2.1.9",
+    "uvicorn>=0.54.0",
+]
