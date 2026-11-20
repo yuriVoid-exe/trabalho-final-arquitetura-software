@@ -13,3 +13,6 @@ wheels/
 *.db
 *.sqlite
 *.sqlite3
+
+# Pytest
+.pytest_cache/
