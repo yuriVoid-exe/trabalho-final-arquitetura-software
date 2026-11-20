@@ -1,0 +1,120 @@
+services:
+  auth-service:
+    build: .
+    container_name: sgea-auth-service
+    command: uvicorn sgea.src.auth_service.main:app --host 0.0.0.0 --port 8001
+    ports:
+      - "8001:8001"
+    environment:
+      AUTH_DATABASE_URL: sqlite+aiosqlite:////app/data/auth.db
+      AUTH_REST_PORT: "8001"
+      AUTH_GRPC_PORT: "50051"
+      AUTH_JWT_SECRET_KEY: sgea-docker-secret-key-trocar-em-producao
+    volumes:
+      - auth_data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - sgea-net
+
+  events-service:
+    build: .
+    container_name: sgea-events-service
+    command: uvicorn sgea.src.events_service.main:app --host 0.0.0.0 --port 8002
+    environment:
+      EVENTS_DATABASE_URL: sqlite+aiosqlite:////app/data/events.db
+      EVENTS_REST_PORT: "8002"
+      EVENTS_GRPC_PORT: "50052"
+    volumes:
+      - events_data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8002/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - sgea-net
+
+  registrations-service:
+    build: .
+    container_name: sgea-registrations-service
+    command: uvicorn sgea.src.registrations_service.main:app --host 0.0.0.0 --port 8003
+    environment:
+      REGISTRATIONS_DATABASE_URL: sqlite+aiosqlite:////app/data/registrations.db
+      REGISTRATIONS_REST_PORT: "8003"
+      REGISTRATIONS_GRPC_PORT: "50053"
+    volumes:
+      - registrations_data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8003/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - sgea-net
+
+  notification-service:
+    build: .
+    container_name: sgea-notification-service
+    command: uvicorn sgea.src.notification_service.main:app --host 0.0.0.0 --port 8004
+    ports:
+      - "8004:8004"
+    environment:
+      NOTIFICATION_DATABASE_URL: sqlite+aiosqlite:////app/data/notifications.db
+      NOTIFICATION_REST_PORT: "8004"
+      NOTIFICATION_GRPC_PORT: "50054"
+      NOTIFICATION_AUTH_GRPC_TARGET: auth-service:50051
+    volumes:
+      - notifications_data:/app/data
+    depends_on:
+      auth-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8004/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - sgea-net
+
+  orchestrator:
+    build: .
+    container_name: sgea-orchestrator
+    command: uvicorn sgea.src.orchestrator.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      ORCHESTRATOR_REST_PORT: "8000"
+      ORCHESTRATOR_AUTH_GRPC_TARGET: auth-service:50051
+      ORCHESTRATOR_EVENTS_GRPC_TARGET: events-service:50052
+      ORCHESTRATOR_REGISTRATIONS_GRPC_TARGET: registrations-service:50053
+      ORCHESTRATOR_NOTIFICATION_GRPC_TARGET: notification-service:50054
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      events-service:
+        condition: service_healthy
+      registrations-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - sgea-net
+
+volumes:
+  auth_data:
+  events_data:
+  registrations_data:
+  notifications_data:
+
+networks:
+  sgea-net:
+    driver: bridge
