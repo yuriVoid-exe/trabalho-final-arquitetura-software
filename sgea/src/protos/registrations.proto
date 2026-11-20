@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package sgea.registrations;
+
+enum RegistrationStatus {
+  REGISTRATION_STATUS_UNSPECIFIED = 0;
+  CONFIRMED = 1;
+  CANCELLED = 2;
+}
+
+service RegistrationsService {
+  // Inscrição e cancelamento (Participante)
+  rpc CreateRegistration (CreateRegistrationRequest) returns (RegistrationResponse);
+  rpc CancelRegistration (CancelRegistrationRequest) returns (RegistrationResponse);
+
+  // Consultas
+  rpc GetRegistration (GetRegistrationRequest) returns (RegistrationResponse);
+  rpc ListEventRegistrations (ListEventRegistrationsRequest) returns (ListRegistrationsResponse);
+  rpc ListUserRegistrations (ListUserRegistrationsRequest) returns (ListRegistrationsResponse);
+
+  // Presença (Organizador) e Certificado (Participante)
+  rpc RecordAttendance (RecordAttendanceRequest) returns (RegistrationResponse);
+  rpc IssueCertificate (IssueCertificateRequest) returns (CertificateResponse);
+
+  // Dados agregados para relatórios gerais (Admin)
+  rpc GetRegistrationsSummary (GetRegistrationsSummaryRequest) returns (RegistrationsSummaryResponse);
+}
+
+message CreateRegistrationRequest {
+  string event_id = 1;
+  string user_id = 2;
+  string user_name = 3;
+  string user_email = 4;
+  string event_title = 5;
+}
+
+message CancelRegistrationRequest {
+  string registration_id = 1;
+  string requester_id = 2;
+  bool requester_is_admin = 3;
+}
+
+message GetRegistrationRequest {
+  string registration_id = 1;
+}
+
+message ListEventRegistrationsRequest {
+  string event_id = 1;
+  bool include_cancelled = 2;
+}
+
+message ListUserRegistrationsRequest {
+  string user_id = 1;
+  bool include_cancelled = 2;
+}
+
+message RecordAttendanceRequest {
+  string registration_id = 1;
+  bool attended = 2;
+}
+
+message IssueCertificateRequest {
+  string registration_id = 1;
+  string requester_id = 2;
+  bool requester_is_admin = 3;
+}
+
+message RegistrationResponse {
+  string registration_id = 1;
+  string event_id = 2;
+  string user_id = 3;
+  string user_name = 4;
+  string user_email = 5;
+  string event_title = 6;
+  RegistrationStatus status = 7;
+  bool attendance_recorded = 8;
+  string certificate_code = 9;
+  string created_at = 10;
+}
+
+message ListRegistrationsResponse {
+  repeated RegistrationResponse registrations = 1;
+}
+
+message CertificateResponse {
+  string registration_id = 1;
+  string event_id = 2;
+  string event_title = 3;
+  string user_id = 4;
+  string user_name = 5;
+  string certificate_code = 6;
+  string issued_at = 7;
+}
+
+message GetRegistrationsSummaryRequest {}
+
+message RegistrationsSummaryResponse {
+  int32 total_registrations = 1;
+  int32 confirmed_registrations = 2;
+  int32 cancelled_registrations = 3;
+  int32 total_attendances = 4;
+  int32 certificates_issued = 5;
+}
