@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package sgea.notifications;
+
+enum NotificationChannel {
+  NOTIFICATION_CHANNEL_UNSPECIFIED = 0;
+  EMAIL = 1;
+  SYSTEM = 2;
+}
+
+enum NotificationStatus {
+  NOTIFICATION_STATUS_UNSPECIFIED = 0;
+  SENT = 1;
+  FAILED = 2;
+}
+
+service NotificationService {
+  rpc SendNotification (SendNotificationRequest) returns (NotificationResponse);
+  rpc ListNotificationsByRecipient (ListNotificationsByRecipientRequest) returns (ListNotificationsResponse);
+}
+
+message SendNotificationRequest {
+  string recipient_id = 1;
+  string recipient_email = 2;
+  string recipient_name = 3;
+  string subject = 4;
+  string message = 5;
+  NotificationChannel channel = 6;
+  string source_system = 7; // Ex: "SGEA", "PORTAL_ALUNO" (reuso SOA)
+}
+
+message NotificationResponse {
+  string notification_id = 1;
+  string recipient_id = 2;
+  string recipient_email = 3;
+  string recipient_name = 4;
+  string subject = 5;
+  string message = 6;
+  NotificationChannel channel = 7;
+  NotificationStatus status = 8;
+  string source_system = 9;
+  string created_at = 10;
+}
+
+message ListNotificationsByRecipientRequest {
+  string recipient_id = 1;
+}
+
+message ListNotificationsResponse {
+  repeated NotificationResponse notifications = 1;
+}
